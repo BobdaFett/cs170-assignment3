@@ -59,3 +59,9 @@ void getTokens(char* inputStr, char *tokens[]) {
 	// If i were to add extra values to the array, each time i would have to create a new array, copy everything over, then delete the array.
 
 }
+
+void noteTaking() {
+	fstream fileObject;
+	fileObject.open("nameHere.txt", ios::in | ios::out | ios::trunc);
+	fileObject.seekg(0, ios::beg);
+}
