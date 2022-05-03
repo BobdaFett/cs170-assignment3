@@ -7,7 +7,6 @@ using namespace std;
 // This program may not use the library class string or vectors.
 
 int main() {
-	// Something here...
 	/*
 	* Input several lines of text from the user as a C-string.
 	* Print an alphabetical listing of each word in the text and how many times that word occurred without regard for upper/lowercase.
@@ -22,7 +21,7 @@ int main() {
 	char userInput[100]{};
 
 	cout << "Please input a line of text, no longer than 100 characters long: ";
-	cin.getline(userInput, 100); // <- pulls 100 characters from cin... would take more if the array was larger.
+	cin.getline(userInput, sizeof(userInput)); // <- pulls 100 characters from cin... would take more if the array was larger.
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	// TODO: validate inputs, terminate at end of file.
 
