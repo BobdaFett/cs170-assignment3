@@ -84,7 +84,7 @@ int main() {
 			updateTool();
 			break;
 		case 7:
-			cout << "Good bye!" << endl;
+			cout << "\nExiting program..." << endl;
 			return 0;
 			break;
 		}
@@ -122,31 +122,20 @@ void inputData() {
 	cout << "Starting data input..." << endl;
 	fstream file;
 	file.open("hardware.txt", ios::binary | ios::in | ios::out);
-	int userInput;
-	string stringInput;
-	cout << "Please enter the TID (tool identification number) of the tool you would like: ";
-	cin >> userInput;
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	
+	int tid, quantity;
+	string name;
+	double cost;
 
-	// Set where the file should be reading from:
-	file.seekg((sizeof(Tool) * userInput - 1), ios::beg);
-	Tool temp = Tool();
-	file.read((char*)&temp, sizeof(Tool));
-	cout << "Currently editing TID " << temp.getTid() << ", name: " << temp.getName() << endl;
+	// Create tool here.
+	cout << "Please input the TID, name, quantity, and cost, separated by spaces: ";
+	cin >> tid >> name >> quantity >> cost;
+	// Validate input here.
 
-	cout << "Menu here with all options for editing: ";
-	cin >> userInput;
-	switch (userInput) {
-	case 1: // Change name
-		break;
-	case 2: // Change quantity
-		break;
-	case 3: // Change cost
-		break;
-	default:
-		// Go back to beginning
-		break;
-	}
+	Tool temp = Tool(tid, name, quantity, cost);
+	file.write((char*)&temp, sizeof(Tool));
+	// May want to check if this will overwrite a tool that aready exists.
+
 	file.close();
 }
 
@@ -154,27 +143,39 @@ void listTools() {
 	// Iterates through the whole file while printing each argument.
 	ifstream file;
 	file.open("hardware.txt", ios::binary | ios::in);
-	Tool* temp = new Tool();
-	try {
-		while (!file.eof()) { // Needs to check that bits are good before doing anything with them.
-			file.read((char*)&temp, sizeof(Tool));
-			if (file.fail()) { throw(2); }
-			cout << temp.getTid() << temp.getName() << temp.getQuantity() << temp.getCost() << endl; // All in one line, reformat later.
+	Tool temp = Tool();
+	while (!file.eof()) { // Needs to check that bits are good before doing anything with them.
+		file.read((char*)&temp, sizeof(Tool)); // <-- I think this is my problem line
+		if (file.fail()) {
+			cout << "File failed to read, end of file has been reached." << endl;
+			break;
 		}
+		cout << temp.getTid() << temp.getName() << temp.getQuantity() << temp.getCost() << endl; // All in one line, reformat later.
 	}
-	catch (int e) {
-		if (e == 2) {
-			cout << "file.fail() is true." << endl;
-		}
-	}
+	file.clear();
 	file.close();
 	cout << "File closed successfully." << endl;
+	system("pause");
+	// Buffer overrun happens here, cannot find out why.
 }
 
 void delTool() {
-	// Might add a name/number parameter.
+	// Should completely remove a tool from the file. Basically just delete the line of text.
+	// set seekg to whatever tid to delete.
+
+	int userInput;
+	cout << "Please enter the TID of the item to delete: ";
+	cin >> userInput;
+
+	fstream file;
+	file.open("hardware.txt", ios::binary | ios::out | ios::app);
+	file.seekg(sizeof(Tool) * userInput - 1, ios::beg);
+	file.write("", sizeof(Tool));
+
+	cout << "Operation completed." << endl;
 }
 
 void updateTool() {
-	// Might add a name/number parameter.
+	// Change the information that a tool has. Different from input tool.
+	
 }
