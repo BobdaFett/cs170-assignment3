@@ -20,10 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Problem2.cpp" />
-    <ClCompile Include="Tool.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Tool.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
