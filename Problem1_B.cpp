@@ -26,7 +26,7 @@ int main() {
 
 	// Get tokens from full string (dynamic list return)
 	char** allTokens = getTokens(userInput, numOfTokens + 1);
-	qsort(allTokens, (size_t) numOfTokens + 1, (size_t) sizeof(char), cmpTokens);
+	qsort(allTokens, (size_t)numOfTokens + 1, (size_t)sizeof(char), cmpTokens);
 
 	for (int i = 0; i < strlen(userInput); i++)
 		cout << allTokens[i];
@@ -38,7 +38,7 @@ int main() {
 }
 
 char** getTokens(char inputString[], const int numTokens) {
-	char** tokensList = new char*[numTokens];
+	char** tokensList = new char* [numTokens];
 	char* temp = strtok(inputString, " "); // It is assumed that there is no punctuation
 	int currentIndex = 0;
 	while (temp != NULL) {

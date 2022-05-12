@@ -93,7 +93,7 @@ int main() {
 
 void initFile() {
 	fstream file;
-	file.open("hardware.txt", ios::binary | ios::out | ios::trunc);
+	file.open("hardware.dat", ios::binary | ios::out | ios::trunc);
 	// This will init to 100 empty places, possibly being empty spaces.
 	for (int i = 1; i <= 100; i++) {
 		Tool temp = Tool(i, "default", 0, 0.00);
@@ -108,7 +108,7 @@ void popFromFile(string fileName) {
 	// Must iterate through an entire file, pulling a specific structure out of it.
 	fstream file;
 	ifstream inputFile;
-	file.open("hardware.txt", ios::binary | ios::in | ios::out);
+	file.open("hardware.dat", ios::binary | ios::in | ios::out);
 	inputFile.open(fileName, ios::binary);
 	for (int i = 1; i <= 100; i++) {
 		// Must somehow read all of the Tool structs properly.
@@ -121,7 +121,7 @@ void inputData() {
 	// might add a name/etc parameter to this.
 	cout << "Starting data input..." << endl;
 	fstream file;
-	file.open("hardware.txt", ios::binary | ios::in | ios::out);
+	file.open("hardware.dat", ios::binary | ios::in | ios::out);
 	
 	int tid, quantity;
 	string name;
@@ -142,7 +142,7 @@ void inputData() {
 void listTools() {
 	// Iterates through the whole file while printing each argument.
 	ifstream file;
-	file.open("hardware.txt", ios::binary | ios::in);
+	file.open("hardware.dat", ios::binary | ios::in);
 	Tool temp = Tool();
 	while (!file.eof()) { // Needs to check that bits are good before doing anything with them.
 		file.read((char*)&temp, sizeof(Tool)); // <-- I think this is my problem line
@@ -168,7 +168,7 @@ void delTool() {
 	cin >> userInput;
 
 	fstream file;
-	file.open("hardware.txt", ios::binary | ios::out | ios::app);
+	file.open("hardware.dat", ios::binary | ios::out | ios::app);
 	file.seekg(sizeof(Tool) * userInput - 1, ios::beg);
 	file.write("", sizeof(Tool));
 
