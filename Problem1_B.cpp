@@ -16,7 +16,7 @@ int cmpTokens(const void* a, const void* b);
 int main() {
 	// Get input from user
 	char userInput[LINE_MAX] = {};
-	cout << "Please input a string, maxiumum length 1000 characters, using ctrl + Z to end:" << endl;
+	cout << "Please input a string, maximum length 1000 characters, using ctrl + Z to end:" << endl;
 	cin.getline(userInput, LINE_MAX, cin.eof()); // this technically shouldn't work, but it kinda does? Must use ^Z on its own line.
 
 	int numOfTokens = 0;
@@ -31,7 +31,7 @@ int main() {
 	for (int i = 0; i < strlen(userInput); i++)
 		cout << allTokens[i];
 
-	// Print all of the tokens one by one (with the number of times each of them happens)
+	// Print all the tokens one by one (with the number of times each of them happens)
 	// Debating if the sortTokens function should also print these out.
 
 	return 0;

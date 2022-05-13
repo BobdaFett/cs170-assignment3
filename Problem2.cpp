@@ -111,7 +111,7 @@ void popFromFile(string fileName) {
 	file.open("hardware.dat", ios::binary | ios::in | ios::out);
 	inputFile.open(fileName, ios::binary);
 	for (int i = 1; i <= 100; i++) {
-		// Must somehow read all of the Tool structs properly.
+		// Must somehow read all the Tool structs properly.
 	}
 	cout << "File read/write status: " << ((file.good()) ? "good" : "bad") << endl;
 	file.close();
