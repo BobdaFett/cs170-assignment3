@@ -59,6 +59,9 @@ int main() {
 	for (int i = 0; i < numTokens; i++)
 		cout << allTokens[i];
 
+	// Print all of the tokens one by one (with the number of times each of them happens)
+	// Debating if the sortTokens function should also print these out.
+
 	return 0;
 }
 
