@@ -15,20 +15,24 @@ int cmpTokens(const void* a, const void* b);
 
 int main() {
 	// Get input from user
-	char userInput[LINE_MAX] = {};
-	cout << "Please input a string, maxiumum length 1000 characters, using ctrl + Z to end:" << endl;
-	cin.getline(userInput, LINE_MAX, cin.eof()); // this technically shouldn't work, but it kinda does? Must use ^Z on its own line.
+	string userInputString, temp;
+	int numTokens = 0;
+	cout << "Please input a string, using ^Z on a separate line to end: ";
+	while (!cin.eof()) {
+		if (cin >> temp) {
+			userInputString += temp + " ";
+			numTokens++;
+		}
+	}
 
-	int numOfTokens = 0;
-	for (int i = 0; i < strlen(userInput); i++)
-		if (userInput[i] == ' ' || userInput[i] == '\n')
-			numOfTokens++;
+	char* inputCString = new char[userInputString.length() + 1];
+	strcpy(inputCString, userInputString.c_str());
 
 	// Get tokens from full string (dynamic list return)
-	char** allTokens = getTokens(userInput, numOfTokens + 1);
-	qsort(allTokens, (size_t) numOfTokens + 1, (size_t) sizeof(char), cmpTokens);
+	char** allTokens = getTokens(inputCString, numTokens);
+	qsort(allTokens, numTokens + 1, sizeof(char*), cmpTokens);
 
-	for (int i = 0; i < strlen(userInput); i++)
+	for (int i = 0; i < numTokens; i++)
 		cout << allTokens[i];
 
 	// Print all of the tokens one by one (with the number of times each of them happens)
