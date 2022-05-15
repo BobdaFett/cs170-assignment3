@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 using namespace std;
 
 #pragma warning(disable : 4996)
@@ -10,7 +11,7 @@ using namespace std;
 const int LINE_MAX = 1000;
 
 
-char** getTokens(char inputString[], const int numTokens);
+char** getTokens(char inputString[], int numTokens);
 int cmpTokens(const void* a, const void* b);
 
 int main() {
@@ -41,14 +42,14 @@ int main() {
 	return 0;
 }
 
-char** getTokens(char inputString[], const int numTokens) {
+char** getTokens(char inputString[], int numTokens) {
 	char** tokensList = new char*[numTokens];
 	char* temp = strtok(inputString, " "); // It is assumed that there is no punctuation
 	int currentIndex = 0;
-	while (temp != NULL) {
+	while (temp != nullptr) {
 		tokensList[currentIndex++] = temp; // Could overrun, however I don't think the program will reach that point. Unless something else increments currentIndex.
 		cout << temp << endl;
-		temp = strtok(NULL, " ");
+		temp = strtok(nullptr, " ");
 	}
 	return tokensList;
 }

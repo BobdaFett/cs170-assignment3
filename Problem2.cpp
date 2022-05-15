@@ -1,181 +1,174 @@
 #include <iostream>
-#include <fstream>
+#include <iomanip>
+#include "Tool.h"
 using namespace std;
 
-void initFile();
-void popFromFile(string fileName);
-void inputData();
-void listTools();
-void delTool();
-void updateTool();
-
-struct Tool {
-private:
-	int tid; // "Tool identification number"
-	string name;
-	int quantity;
-	double cost;
-
-public:
-	Tool() {
-		this->tid = 0;
-		this->name = "default";
-		this->quantity = 0;
-		this->cost = 0.00;
-	}
-	Tool(int tid, string name, int quantity, double cost) {
-		this->tid = tid;
-		this->name = name;
-		this->quantity = quantity;
-		this->cost = cost;
-	}
-	void setName(string name) { this->name = name; }
-	void setCost(double cost) { this->cost = cost; }
-	void setQuantity(int quantity) { this->quantity = quantity; }
-	void setTid(int tid) { this->tid = tid; }
-	int getTid() { return this->tid; }
-	string getName() { return this->name; }
-	int getQuantity() { return this->quantity; }
-	double getCost() { return this->cost; }
-
-};
+void createFile(fstream& file);
+void fromTxt(fstream& file);
+void inputData(fstream& file);
+void listTools(fstream& file);
+void delTool(fstream& file);
+void updateTool(fstream& file);
 
 int main() {
-	
-	// Program is assumed to be working ONLY with hardware.dat.
-	// Other files will not work, nor will I make them work.
+    int userInput;
+    fstream userFile;
+    while(true) {
+        cout << "1: Create a file hardware.dat\n"
+             << "2: Populate hardware.dat with data from another file\n"
+             << "3: Input data for any tool\n"
+             << "4: List all tools\n"
+             << "5: Delete a tool from the list\n"
+             << "6: Update any tool from the list\n"
+             << "7: Exit the program\n\n"
+             << "Please input your choice: ";
+        cin >> userInput;
 
-	int userInput;
-	string fileNameInput;
-	while (true) {
-		cout << "1: Create a file hardware.dat\n"
-			<< "2: Populate hardware.dat with data from another file\n"
-			<< "3: Input data for any tool\n"
-			<< "4: List all tools\n"
-			<< "5: Delete a tool from the list\n"
-			<< "6: Update any tool from the list\n"
-			<< "7: Exit the program\n\n"
-			<< "Please input your choice: ";
-		cin >> userInput;
-		// Validate the input here.
-		// USING A STRUCT WILL BE VERY USEFUL HERE.
+        switch(userInput) {
+            case 1:
+                createFile(userFile);
+                break;
+            case 2:
+                fromTxt(userFile);
+                break;
+            case 3:
+                inputData(userFile);
+                break;
+            case 4:
+                listTools(userFile);
+                break;
+            case 5:
+                delTool(userFile);
+                break;
+            case 6:
+                updateTool(userFile);
+                break;
+            case 7:
+                cout << "Exiting..." << endl;
+                return 0;
+            default:
+                // Return to beginning
+                cout << "Invalid option. Try again.\n" << endl;
+                break;
+        }
+    }
 
-		switch (userInput) {
-		case 1: // Create a file and initialize it with 100 empty objects.
-			initFile();
-			break;
-		case 2: // Populate file with data read from text file. File can be assumed to have the correct formatting.
-			// Get the name of the file that should be read from. MUST INCLUDE FILE EXTENSION.
-			cout << "Please input the name of the file you would like to read: ";
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			cin >> fileNameInput;
-			popFromFile(fileNameInput);
-			break;
-		case 3: // input data concerning one or more tools from the keyboard.
-			inputData();
-			break;
-		case 4: // List all tools
-			listTools();
-			break;
-		case 5: // Delete a tool completely.
-			delTool();
-			break;
-		case 6: // Update any information for a tool at any location.
-			updateTool();
-			break;
-		case 7:
-			cout << "\nExiting program..." << endl;
-			return 0;
-			break;
-		}
-	}
+    return 0;
 }
 
-void initFile() {
-	fstream file;
-	file.open("hardware.dat", ios::binary | ios::out | ios::trunc);
-	// This will init to 100 empty places, possibly being empty spaces.
-	for (int i = 1; i <= 100; i++) {
-		Tool temp = Tool(i, "default", 0, 0.00);
-		file.write((char*)&temp, sizeof(Tool));
-		/*cout << "Created tool TID " << i << endl;*/
-	}
-	cout << "\n" << ((file.good()) ? "File created successfully." : "Operation failed - file was not created.") << "\n\n" << endl;
-	file.close();
+void createFile(fstream& file) {
+    // Add warning that this will overwrite original file if there is one.
+    file.open("hardware.dat", ios::binary | ios::out | ios::in | ios::trunc);
+    for(int i = 0; i < 100; i++) {
+        Tool temp = Tool(i+1, "default", 0, 0);
+        file.write((char*)&temp, sizeof(Tool));
+    }
 }
 
-void popFromFile(string fileName) {
-	// Must iterate through an entire file, pulling a specific structure out of it.
-	fstream file;
-	ifstream inputFile;
-	file.open("hardware.dat", ios::binary | ios::in | ios::out);
-	inputFile.open(fileName, ios::binary);
-	for (int i = 1; i <= 100; i++) {
-		// Must somehow read all the Tool structs properly.
-	}
-	cout << "File read/write status: " << ((file.good()) ? "good" : "bad") << endl;
-	file.close();
+void fromTxt(fstream& file) {
+    if(!file.is_open()) {
+        file.open("hardware.dat", ios::binary | ios::out | ios::in);
+        if(!file) {
+            cout << "Please create a new file from the main menu first." << endl;
+            file.clear();
+            main();
+        }
+    }
+    ifstream toRead;
+    string userInput;
+    cout << "Please enter the name of the \"*.txt\" to read: ";
+    cin >> userInput;
+    toRead.open(userInput + ".txt", ios::in);
+
+    Tool temp = Tool(0, "", 0, 0);
+
+    if(toRead) {
+        while (temp.readFile(toRead)) {
+            file.write((char*)&temp, sizeof(Tool));
+        }
+    }
+
+    toRead.close();
 }
 
-void inputData() {
-	// might add a name/etc parameter to this.
-	cout << "Starting data input..." << endl;
-	fstream file;
-	file.open("hardware.dat", ios::binary | ios::in | ios::out);
-	
-	int tid, quantity;
-	string name;
-	double cost;
+void inputData(fstream& file) {
+    if(!file.is_open())
+        file.open("hardware.dat", ios::binary | ios::out | ios::in);
 
-	// Create tool here.
-	cout << "Please input the TID, name, quantity, and cost, separated by spaces: ";
-	cin >> tid >> name >> quantity >> cost;
-	// Validate input here.
+    char name[15];
+    int tid, quantity;
+    double cost;
 
-	Tool temp = Tool(tid, name, quantity, cost);
-	file.write((char*)&temp, sizeof(Tool));
-	// May want to check if this will overwrite a tool that aready exists.
-
-	file.close();
+    cout << "Please input the data you would like to input in \"ID name quantity cost\" format: ";
+    if (cin >> tid >> name >> quantity >> cost) {
+        Tool temp = Tool(tid, name, quantity, cost);
+        if(file.read((char*)&temp, sizeof(Tool)) && temp.getTid() == tid) {
+            cout << "This will overwrite another tool. Please use the \"Update Tool\" function from the main menu." << endl;
+            file.clear();
+        } else {
+            temp = Tool(tid, name, quantity, cost);
+            file.clear();
+            file.seekg(-sizeof(Tool), ios::cur);
+            file.write((char*)&temp, sizeof(Tool));
+        }
+    }
 }
 
-void listTools() {
-	// Iterates through the whole file while printing each argument.
-	ifstream file;
-	file.open("hardware.dat", ios::binary | ios::in);
-	Tool temp = Tool();
-	while (!file.eof()) { // Needs to check that bits are good before doing anything with them.
-		file.read((char*)&temp, sizeof(Tool)); // <-- I think this is my problem line
-		if (file.fail()) {
-			cout << "File failed to read, end of file has been reached." << endl;
-			break;
-		}
-		cout << temp.getTid() << temp.getName() << temp.getQuantity() << temp.getCost() << endl; // All in one line, reformat later.
-	}
-	file.clear();
-	file.close();
-	cout << "File closed successfully." << endl;
-	system("pause");
-	// Buffer overrun happens here, cannot find out why.
+void listTools(fstream& file) {
+    if(!file.is_open())
+        file.open("hardware.dat", ios::binary | ios::out | ios::in);
+    file.seekg(0, ios::beg);
+    string name;
+    int id, quantity;
+    double cost;
+    Tool temp = Tool(0, "", 0, 0);
+    file.seekg(0, ios::beg);
+    while(file.read((char*)&temp, sizeof(Tool))) {
+        if (file.fail()) break;
+        temp.printFormatted();
+    }
 }
 
-void delTool() {
-	// Should completely remove a tool from the file. Basically just delete the line of text.
-	// set seekg to whatever tid to delete.
+void delTool(fstream& file) {
+    if(!file.is_open())
+        file.open("hardware.dat", ios::binary | ios::out | ios::in);
 
-	int userInput;
-	cout << "Please enter the TID of the item to delete: ";
-	cin >> userInput;
+    // Not quite sure why this one isn't working.
+    int userInput;
+    cout << "Input the TID of the tool you would like to remove: ";
+    if(cin >> userInput) {
 
-	fstream file;
-	file.open("hardware.dat", ios::binary | ios::out | ios::app);
-	file.seekg(sizeof(Tool) * userInput - 1, ios::beg);
-	file.write("", sizeof(Tool));
+        // Iterate through the whole file and remake it.
+        ofstream newFile ("hardwareTemp.dat", ios::binary | ios::out | ios::trunc);
+        Tool temp = Tool(0, "", 0, 0);
 
-	cout << "Operation completed." << endl;
+        while(file.read((char*)&temp, sizeof(Tool))) {
+            if (file.fail()) break;
+            if(temp.getTid() != userInput) {
+                newFile.write((char*)&temp, sizeof(Tool));
+            }
+        }
+
+        // Neither the remove nor rename functions are working?
+        remove("hardware.dat");
+        int naming = rename("hardwareTemp.dat", "hardware.dat");
+        if (naming == 0) cout << "Operation successful." << endl;
+    }
 }
 
-void updateTool() {
-	// Change the information that a tool has. Different from input tool.
-	
+void updateTool(fstream& file) {
+    if(!file.is_open())
+        file.open("hardware.dat", ios::binary | ios::out | ios::in);
+    int tid, quantity;
+    char name[10];
+    double cost;
+    cout << "Input the TID to be updated: ";
+    if(cin >> tid) {
+        file.seekg(sizeof(Tool) * (tid - 1), ios::beg);
+        cout << "Input the new info in (name quantity cost) format: ";
+        if (cin >> name >> quantity >> cost) {
+            Tool temp = Tool(tid, name, quantity, (double)cost);
+            file.write((char*)&temp, sizeof(Tool));
+        }
+    }
 }
