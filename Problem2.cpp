@@ -21,7 +21,7 @@ int main() {
              << "5: Delete a tool from the list\n"
              << "6: Update any tool from the list\n"
              << "7: Exit the program\n\n"
-             << "Please input your choice: ";
+             << "Input your choice: ";
         cin >> userInput;
 
         switch(userInput) {
@@ -57,8 +57,22 @@ int main() {
 }
 
 void createFile(fstream& file) {
-    // Add warning that this will overwrite original file if there is one.
+    if(file.is_open()) {
+        char choice;
+        cout << "WARNING - this will overwrite the previous file. Continue? (Y/n) ";
+        if(cin >> choice) {
+            if(toupper(choice) == 'Y') {
+                file.open("hardware.dat", ios::binary | ios::out | ios::in | ios::trunc);
+                if (file) cout << "File created successfully." << endl;
+            } else if (toupper(choice) == 'N') {
+                cout << "Returning to main menu...\n" << endl;
+                main();
+            }
+        }
+    }
+
     file.open("hardware.dat", ios::binary | ios::out | ios::in | ios::trunc);
+
     for(int i = 0; i < 100; i++) {
         Tool temp = Tool(i+1, "default", 0, 0);
         file.write((char*)&temp, sizeof(Tool));
@@ -66,24 +80,23 @@ void createFile(fstream& file) {
 }
 
 void fromTxt(fstream& file) {
-    if(!file.is_open()) {
+    if(!file.is_open())
         file.open("hardware.dat", ios::binary | ios::out | ios::in);
-        if(!file) {
-            cout << "Please create a new file from the main menu first." << endl;
-            file.clear();
-            main();
-        }
-    }
+
     ifstream toRead;
     string userInput;
-    cout << "Please enter the name of the \"*.txt\" to read: ";
+    Tool temp = Tool(0, "", 0, 0);
+
+    cout << "Enter the name of the \"*.txt\" to read: ";
     cin >> userInput;
     toRead.open(userInput + ".txt", ios::in);
 
-    Tool temp = Tool(0, "", 0, 0);
-
     if(toRead) {
         while (temp.readFile(toRead)) {
+            if(toRead.fail()) {
+                cout << "End of file has been reached.\n" << endl;
+                break;
+            }
             file.write((char*)&temp, sizeof(Tool));
         }
     }
@@ -99,7 +112,7 @@ void inputData(fstream& file) {
     int tid, quantity;
     double cost;
 
-    cout << "Please input the data you would like to input in \"ID name quantity cost\" format: ";
+    cout << "Input the data you would like to create in \"ID name quantity cost\" format: ";
     if (cin >> tid >> name >> quantity >> cost) {
         Tool temp = Tool(tid, name, quantity, cost);
         if(file.read((char*)&temp, sizeof(Tool)) && temp.getTid() == tid) {
@@ -108,7 +121,7 @@ void inputData(fstream& file) {
         } else {
             temp = Tool(tid, name, quantity, cost);
             file.clear();
-            file.seekg(-sizeof(Tool), ios::cur);
+            file.seekg(-(int)sizeof(Tool), ios::cur);
             file.write((char*)&temp, sizeof(Tool));
         }
     }
@@ -117,16 +130,19 @@ void inputData(fstream& file) {
 void listTools(fstream& file) {
     if(!file.is_open())
         file.open("hardware.dat", ios::binary | ios::out | ios::in);
-    file.seekg(0, ios::beg);
+
     string name;
     int id, quantity;
     double cost;
     Tool temp = Tool(0, "", 0, 0);
+
     file.seekg(0, ios::beg);
     while(file.read((char*)&temp, sizeof(Tool))) {
         if (file.fail()) break;
         temp.printFormatted();
     }
+
+    cout << "\n\n";
 }
 
 void delTool(fstream& file) {
@@ -142,6 +158,7 @@ void delTool(fstream& file) {
         ofstream newFile ("hardwareTemp.dat", ios::binary | ios::out | ios::trunc);
         Tool temp = Tool(0, "", 0, 0);
 
+        file.seekg(0, ios::beg);
         while(file.read((char*)&temp, sizeof(Tool))) {
             if (file.fail()) break;
             if(temp.getTid() != userInput) {
@@ -149,26 +166,34 @@ void delTool(fstream& file) {
             }
         }
 
-        // Neither the remove nor rename functions are working?
+        file.close(); newFile.close();
         remove("hardware.dat");
         int naming = rename("hardwareTemp.dat", "hardware.dat");
-        if (naming == 0) cout << "Operation successful." << endl;
+        if (naming == 0) { // If naming was successful...
+            cout << "Operation successful.\n" << endl;
+            file.open("hardware.dat", ios::binary | ios::in | ios::out);
+        }
+    } else {
+        cout << "Invalid input. Returning to main menu...\n" << endl;
     }
 }
 
 void updateTool(fstream& file) {
     if(!file.is_open())
         file.open("hardware.dat", ios::binary | ios::out | ios::in);
+
     int tid, quantity;
     char name[10];
     double cost;
     cout << "Input the TID to be updated: ";
     if(cin >> tid) {
-        file.seekg(sizeof(Tool) * (tid - 1), ios::beg);
-        cout << "Input the new info in (name quantity cost) format: ";
+        file.seekg((int)sizeof(Tool) * (tid - 1), ios::beg);
+        cout << "Input the new info in \"name quantity cost\" format: ";
         if (cin >> name >> quantity >> cost) {
             Tool temp = Tool(tid, name, quantity, (double)cost);
             file.write((char*)&temp, sizeof(Tool));
         }
+    } else {
+        cout << "Invalid input. Returning to main menu...\n" << endl;
     }
 }
