@@ -79,6 +79,9 @@ void createFile(fstream& file) {
     }
 }
 
+// Current functionality completely rewrites the file with the data from the txt file, but in binary.
+// Effectively just converting text to binary.
+// To add would be allowing the user to choose if they would like to completely overwrite the file or append everything.
 void fromTxt(fstream& file) {
     if(!file.is_open())
         file.open("hardware.dat", ios::binary | ios::out | ios::in);
@@ -90,6 +93,8 @@ void fromTxt(fstream& file) {
     cout << "Enter the name of the \"*.txt\" to read: ";
     cin >> userInput;
     toRead.open(userInput + ".txt", ios::in);
+    file.close();
+    file.open("hardware.dat", ios::in | ios::out | ios::trunc | ios::binary);
 
     if(toRead) {
         while (temp.readFile(toRead)) {
@@ -97,6 +102,7 @@ void fromTxt(fstream& file) {
                 cout << "End of file has been reached.\n" << endl;
                 break;
             }
+            cout << temp.getName();
             file.write((char*)&temp, sizeof(Tool));
         }
     }
@@ -115,15 +121,19 @@ void inputData(fstream& file) {
     cout << "Input the data you would like to create in \"ID name quantity cost\" format: ";
     if (cin >> tid >> name >> quantity >> cost) {
         Tool temp = Tool(tid, name, quantity, cost);
-        if(file.read((char*)&temp, sizeof(Tool)) && temp.getTid() == tid) {
-            cout << "This will overwrite another tool. Please use the \"Update Tool\" function from the main menu." << endl;
-            file.clear();
-        } else {
-            temp = Tool(tid, name, quantity, cost);
-            file.clear();
-            file.seekg(-(int)sizeof(Tool), ios::cur);
-            file.write((char*)&temp, sizeof(Tool));
+        while(file.read((char*)&temp, sizeof(Tool))) {
+            if (temp.getTid() == tid) {
+                char choice;
+                cout << "This will replace an existing entry. Use the input function from the main menu for this."
+                     << "Redirecting... \n" << endl;
+                main();
+            }
         }
+
+        // If the while loop finished, then this will run.
+        temp = Tool(tid, name, quantity, cost);
+        file.seekg(0, ios::end);
+        file.write((char*)&temp, sizeof(Tool));
     }
 }
 
@@ -131,9 +141,6 @@ void listTools(fstream& file) {
     if(!file.is_open())
         file.open("hardware.dat", ios::binary | ios::out | ios::in);
 
-    string name;
-    int id, quantity;
-    double cost;
     Tool temp = Tool(0, "", 0, 0);
 
     file.seekg(0, ios::beg);
